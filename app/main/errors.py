@@ -1,5 +1,6 @@
 from flask import render_template, request
 from . import main
+from flask.json import jsonify
 
 @main.app_errorhandler(403)
 def forbidden(e):

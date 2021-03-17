@@ -53,6 +53,10 @@ def register():
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
+    
+
+
+
 
 # 确认邮箱
 @auth.route('/confirm/<token>')

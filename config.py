@@ -1,3 +1,5 @@
+import redis
+
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -41,6 +43,8 @@ class Config():
     FLASKY_FOLLOWERS_PER_PAGE = 50
 
     FLASKY_COMMENTS_PER_PAGE = 15
+
+    REDIS_CLIENT = redis.StrictRedis(host='192.168.137.136', port=6379, db=0, password='123456')
 
     @staticmethod
     def init_app(app):

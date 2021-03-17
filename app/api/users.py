@@ -30,6 +30,7 @@ def get_user_posts(id):
         'count': pagination.total
     })
 
+
 @api.route('/users/<int:id>/timeline/')
 def get_user_followed_posts(id):
     user = User.query.get_or_404(id)

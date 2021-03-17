@@ -1,13 +1,41 @@
+import time
 from flask import render_template, session, redirect, \
-url_for,flash, request, current_app, make_response
+    url_for, flash, request, current_app, make_response, abort
 
 from flask_login import login_user, login_required, logout_user, current_user
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
 from . import main
-from .. import db
+from .. import db, redis_client
 from ..models import User, Role, Permission, Post, Comment
 from ..decorators import admin_required, permission_required
 
+
+def get_top_from_mysql():
+    post_list = Post.query.all()
+    post_list.sort(key=lambda x:len(x.comments.all()))
+    post_list = post_list[-5:]
+    post_list.reverse()
+    return [(k.id,k.body) for k in post_list]
+
+
+def get_top_from_redis():
+    try:
+        print('尝试从redis读...')
+        result = []
+        for i in range(1,6):
+            temp= redis_client.get('top'+str(i))
+            result.append((i,temp.decode())) 
+    except Exception as e:
+        print(e)
+    if len(result) == 0:
+        print('redis没有，从数据库取...')
+        result = get_top_from_mysql()
+
+        print('尝试写入redis...')
+        for i in range(1,6):
+            redis_client.set('top'+str(i), result[i-1][1], ex=10)
+
+    return result
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -33,8 +61,7 @@ def index():
         error_out=False)
     posts = pagination.items
     return render_template('index.html', form=form, posts=posts,
-                           show_followed=show_followed, pagination=pagination)
-
+                           show_followed=show_followed, pagination=pagination, top_posts=get_top_from_redis())
 
 
 @main.route('/user/<username>')
@@ -44,7 +71,6 @@ def user(username):
         abort(404)
     posts = user.posts.order_by(Post.timestamp.desc()).all()
     return render_template('user.html', user=user, posts=posts)
-
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -63,7 +89,6 @@ def edit_profile():
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', form=form)
-
 
 
 @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
@@ -118,7 +143,6 @@ def post(id):
                            comments=comments, pagination=pagination)
 
 
-
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit(id):
@@ -135,7 +159,6 @@ def edit(id):
         return redirect(url_for('.post', id=post.id))
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
-
 
 
 @main.route('/follow/<username>')
@@ -155,7 +178,6 @@ def follow(username):
     return redirect(url_for('.user', username=username))
 
 
-
 @main.route('/unfollow/<username>')
 @login_required
 @permission_required(Permission.FOLLOW)
@@ -171,7 +193,6 @@ def unfollow(username):
     db.session.commit()
     flash('You are not following %s anymore.' % username)
     return redirect(url_for('.user', username=username))
-
 
 
 @main.route('/followers/<username>')
@@ -191,7 +212,6 @@ def followers(username):
                            follows=follows)
 
 
-
 @main.route('/followed_by/<username>')
 def followed_by(username):
     user = User.query.filter_by(username=username).first()
@@ -209,21 +229,19 @@ def followed_by(username):
                            follows=follows)
 
 
-
 @main.route('/all')
 @login_required
 def show_all():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
     return resp
-
 
 
 @main.route('/followed')
 @login_required
 def show_followed():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
     return resp
 
 
@@ -250,6 +268,7 @@ def moderate_enable(id):
     db.session.commit()
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
+
 
 @main.route('/moderate/disable/<int:id>')
 @login_required

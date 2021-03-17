@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_pagedown import PageDown
 from flask_mail import Mail
-from config import config
+from config import config, Config
 
 bootstrap = Bootstrap()
 moment = Moment()
@@ -15,13 +15,15 @@ login_manager = LoginManager()
 pagedown = PageDown()
 
 login_manager.login_view = 'auth.login'
-
+redis_client = Config.REDIS_CLIENT
 
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
+    # 调用所选配置的 init_app() 方法，以便执行更复杂的初始化过程，这里init_app() 方法为空
     config[config_name].init_app(app)
+    
     bootstrap.init_app(app)
     moment.init_app(app)
     db.init_app(app)

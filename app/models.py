@@ -292,7 +292,7 @@ class Role(db.Model):
         return self.permissions & perm == perm
 
 
-    # 用于生成常用角色
+    # 静态方法：用于生成常用角色
     @staticmethod
     def insert_roles():
         roles = {
