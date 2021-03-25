@@ -22,16 +22,16 @@ class Config():
     MAIL_USE_SSL = True
 
     # 邮箱地址
-    MAIL_USERNAME = "xcc_mail@163.com"
+    MAIL_USERNAME = " "
 
     # 邮箱授权码
-    MAIL_PASSWORD = "VHGQMYFJNNPJQYSA"
+    MAIL_PASSWORD = " "
 
     # 默认发送方：用户名+地址
-    MAIL_DEFAULT_SENDER = ('徐聪聪', "xcc_mail@163.com")
+    MAIL_DEFAULT_SENDER = ()
 
     # 默认管理员邮箱
-    FLASKY_ADMIN = "1138084278@qq.com"
+    FLASKY_ADMIN = " "
 
     # 默认邮件主题
     FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
