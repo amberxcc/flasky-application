@@ -1,2 +1,5 @@
-基于开源博客系统flasky， 增加了 redis 存放热门博客功能：
+## 基于开源博客系统flasky， 增加了集成redis存放热门博客功能：
+
+<br/>
+
 ![](img/flasky-redis.png)
