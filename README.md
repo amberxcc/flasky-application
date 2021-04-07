@@ -2,4 +2,6 @@
 
 <br/>
 
+在线Demo地址：http://1.15.182.220:5000/
+
 ![](img/flasky-redis.png)
