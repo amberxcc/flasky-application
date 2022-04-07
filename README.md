@@ -4,3 +4,5 @@
 
 - 模板引擎：jinjia2
 - ORM框架：Flask-SQLAlchemy
+
+![](./img/flasky-redis.png)
